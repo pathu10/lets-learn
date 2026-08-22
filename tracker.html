@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Software & Technology Foundation — Learning Tracker</title>
+<style>
+  :root{
+    --bg:#0f1117;
+    --panel:#161923;
+    --panel-2:#1c202c;
+    --border:#2a2f3d;
+    --text:#e6e8ee;
+    --text-dim:#9aa0ae;
+    --accent:#5b8def;
+
+    --grey-bg:#3a3f4b;
+    --grey-fg:#c6cad3;
+    --grey-dot:#8b93a3;
+
+    --blue-bg:#1c3a5e;
+    --blue-fg:#8fc0ff;
+    --blue-dot:#4a9eff;
+
+    --green-bg:#173d2b;
+    --green-fg:#7ee2a8;
+    --green-dot:#36c76c;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.5;
+  }
+  header.page{
+    padding:32px 40px 20px;
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:0;
+    background:linear-gradient(180deg, var(--bg) 85%, transparent);
+    z-index:20;
+  }
+  header.page h1{
+    margin:0 0 6px;
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  header.page p{
+    margin:0;
+    color:var(--text-dim);
+    font-size:14px;
+  }
+
+  .progress-wrap{
+    max-width:1100px;
+    margin:18px auto 0;
+    padding:0 40px;
+  }
+  .progress-summary{
+    display:flex;
+    gap:24px;
+    flex-wrap:wrap;
+    align-items:center;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 20px;
+    margin-bottom:8px;
+  }
+  .stat{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    min-width:90px;
+  }
+  .stat .num{font-size:22px;font-weight:700;}
+  .stat .lbl{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;}
+  .stat.not-started .num{color:var(--grey-fg);}
+  .stat.in-progress .num{color:var(--blue-fg);}
+  .stat.done .num{color:var(--green-fg);}
+
+  .bar-outer{
+    flex:1 1 260px;
+    height:10px;
+    border-radius:6px;
+    background:var(--panel-2);
+    overflow:hidden;
+    display:flex;
+    min-width:200px;
+  }
+  .bar-seg{height:100%;}
+  .bar-seg.done{background:var(--green-dot);}
+  .bar-seg.progress{background:var(--blue-dot);}
+
+  main{
+    max-width:1100px;
+    margin:0 auto;
+    padding:20px 40px 80px;
+  }
+
+  .toc{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:28px;
+  }
+  .toc a{
+    color:var(--text-dim);
+    text-decoration:none;
+    font-size:13px;
+    padding:6px 12px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:var(--panel);
+    transition:.15s;
+  }
+  .toc a:hover{color:var(--text);border-color:var(--accent);}
+
+  section.category{
+    margin-bottom:36px;
+  }
+  section.category > h2{
+    font-size:20px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:2px solid var(--border);
+    margin:0 0 18px;
+    scroll-margin-top:110px;
+  }
+
+  .subsection{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    margin-bottom:16px;
+    overflow:hidden;
+    scroll-margin-top:110px;
+  }
+  .subsection > .sub-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:14px 18px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .subsection > .sub-header:hover{background:var(--panel-2);}
+  .subsection > .sub-header h3{
+    margin:0;
+    font-size:15px;
+    font-weight:600;
+  }
+  .sub-meta{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:12px;
+    color:var(--text-dim);
+  }
+  .mini-bar{
+    width:70px;
+    height:6px;
+    border-radius:4px;
+    background:var(--panel-2);
+    overflow:hidden;
+    display:flex;
+  }
+  .chevron{
+    transition:transform .2s;
+    color:var(--text-dim);
+    font-size:12px;
+  }
+  .subsection.collapsed .chevron{transform:rotate(-90deg);}
+  .subsection.collapsed table{display:none;}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+  }
+  thead th{
+    text-align:left;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--text-dim);
+    padding:8px 18px;
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+    background:var(--panel-2);
+  }
+  tbody td{
+    padding:10px 18px;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--panel-2);}
+  td.ticket{
+    color:var(--accent);
+    font-weight:600;
+    font-size:13px;
+    white-space:nowrap;
+  }
+  td.summary{color:var(--text);}
+  td.status{width:170px;}
+
+  .status-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:5px 10px 5px 8px;
+    border-radius:6px;
+    font-size:12px;
+    font-weight:600;
+    border:none;
+    cursor:pointer;
+    appearance:none;
+    -webkit-appearance:none;
+    background-repeat:no-repeat;
+    background-position:right 8px center;
+    width:100%;
+  }
+  .status-badge.not-started{background:var(--grey-bg);color:var(--grey-fg);}
+  .status-badge.in-progress{background:var(--blue-bg);color:var(--blue-fg);}
+  .status-badge.done{background:var(--green-bg);color:var(--green-fg);}
+
+  .dot{
+    width:8px;height:8px;border-radius:50%;flex:none;
+  }
+  .not-started .dot{background:var(--grey-dot);}
+  .in-progress .dot{background:var(--blue-dot);}
+  .done .dot{background:var(--green-dot);}
+
+  select.status-select{
+    font-family:inherit;
+  }
+  select.status-select option{
+    background:var(--panel);
+    color:var(--text);
+  }
+
+  footer{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:12px;
+    padding:20px;
+  }
+
+  @media (max-width:700px){
+    header.page, main, .progress-wrap{padding-left:16px;padding-right:16px;}
+    td.status{width:130px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>📚 Software &amp; Technology Foundation</h1>
+  <p>Learning roadmap tracker — click any status badge to update progress. Changes are saved in this browser.</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-summary" id="summary">
+    <div class="stat not-started"><span class="num" id="count-not-started">0</span><span class="lbl">Not Started</span></div>
+    <div class="stat in-progress"><span class="num" id="count-in-progress">0</span><span class="lbl">In Progress</span></div>
+    <div class="stat done"><span class="num" id="count-done">0</span><span class="lbl">Done</span></div>
+    <div class="bar-outer" id="overall-bar"></div>
+    <div class="stat"><span class="num" id="count-pct">0%</span><span class="lbl">Complete</span></div>
+  </div>
+</div>
+
+<main>
+  <nav class="toc" id="toc"></nav>
+  <div id="content"></div>
+</main>
+
+<footer>178 topics · Generated learning tracker · Status stored locally per-browser</footer>
+
+<script>
+const DATA = [
+  { icon: "🟢", title: "FOUNDATION", subsections: [
+    { title: "1. Computer Science Foundations", items: [
+      ["LEARN-001","Programming Fundamentals"],
+      ["LEARN-002","Data Structures"],
+      ["LEARN-003","Algorithms & Big O"],
+      ["LEARN-004","Computer Architecture (CPU/RAM/Memory)"],
+      ["LEARN-005","Processes & Threads"],
+      ["LEARN-006","Operating Systems"],
+      ["LEARN-007","Concurrency & Deadlocks"],
+      ["LEARN-008","File Systems"],
+      ["LEARN-009","Compilers & Runtimes"],
+    ]},
+    { title: "2. Linux & Developer Environment", items: [
+      ["LEARN-010","Linux Fundamentals & CLI"],
+      ["LEARN-011","Bash & Shell Scripting"],
+      ["LEARN-012","Filesystem, Permissions, Users/Groups"],
+      ["LEARN-013","SSH, Services & systemd"],
+      ["LEARN-014","Logs & Cron"],
+      ["LEARN-015","Package Managers & Environment Variables"],
+      ["LEARN-016","Debuggers & Profilers"],
+      ["LEARN-017","Shell Environment & Dotfiles"],
+    ]},
+    { title: "3. Networking Fundamentals", items: [
+      ["LEARN-018","IP Addressing (IPv4/IPv6/MAC)"],
+      ["LEARN-019","Ports & Sockets"],
+      ["LEARN-020","TCP vs UDP"],
+      ["LEARN-021","HTTP, HTTPS & TLS"],
+      ["LEARN-022","DNS"],
+      ["LEARN-023","DHCP & NAT"],
+      ["LEARN-024","Subnets, CIDR & Routing"],
+      ["LEARN-025","OSI & TCP/IP Models"],
+    ]},
+    { title: "4. Web Fundamentals", items: [
+      ["LEARN-026","Browser Architecture & Rendering"],
+      ["LEARN-027","DOM & CSSOM"],
+      ["LEARN-028","JavaScript Engine & Event Loop"],
+      ["LEARN-029","HTML, CSS & JavaScript (core languages)"],
+      ["LEARN-030","Cookies, Cache & Browser Storage"],
+      ["LEARN-031","Service Workers"],
+      ["LEARN-032","Web Performance"],
+      ["LEARN-033","Accessibility & SEO"],
+    ]},
+    { title: "5. Git & Software Development", items: [
+      ["LEARN-034","Git Fundamentals"],
+      ["LEARN-035","Branching, Merge & Rebase"],
+      ["LEARN-036","Cherry-pick, Stash, Reset & Revert"],
+      ["LEARN-037","GitHub, Pull Requests & Code Review"],
+      ["LEARN-038","Branch Protection & Trunk-Based Development"],
+      ["LEARN-039","GitHub Actions (CI basics)"],
+      ["LEARN-040","Semantic Versioning & Releases"],
+      ["LEARN-041","Documentation"],
+    ]},
+  ]},
+  { icon: "🔵", title: "BUILD", subsections: [
+    { title: "6. Frontend Engineering", items: [
+      ["LEARN-042","React"],
+      ["LEARN-043","Angular"],
+      ["LEARN-044","Vue"],
+      ["LEARN-045","Components, State Management & Routing"],
+      ["LEARN-046","Frontend Architecture & Design Systems"],
+      ["LEARN-047","API Integration (frontend)"],
+      ["LEARN-048","Responsive Design"],
+      ["LEARN-049","Accessibility & Internationalization (frontend)"],
+      ["LEARN-050","Lazy Loading, Code Splitting & Bundle Optimization"],
+    ]},
+    { title: "7. Backend Engineering", items: [
+      ["LEARN-051","REST APIs"],
+      ["LEARN-052","GraphQL"],
+      ["LEARN-053","gRPC & WebSockets/SSE"],
+      ["LEARN-054","Middleware, Routing & Controllers"],
+      ["LEARN-055","Dependency Injection & Configuration"],
+      ["LEARN-056","Validation & Error Handling"],
+      ["LEARN-057","Pagination, Filtering & Sorting"],
+      ["LEARN-058","API Versioning & Idempotency"],
+      ["LEARN-059","API Documentation (OpenAPI/Swagger)"],
+    ]},
+    { title: "8. Databases", items: [
+      ["LEARN-060","SQL & Relational Basics"],
+      ["LEARN-061","Keys, Constraints & Joins"],
+      ["LEARN-062","Indexes"],
+      ["LEARN-063","Transactions & ACID"],
+      ["LEARN-064","Isolation Levels & Locks"],
+      ["LEARN-065","Normalization & Denormalization"],
+      ["LEARN-066","Query Optimization & Query Planner"],
+      ["LEARN-067","Connection Pooling"],
+      ["LEARN-068","NoSQL, Redis & Caching"],
+    ]},
+    { title: "9. External APIs & Integrations", items: [
+      ["LEARN-069","API Keys & OAuth Integrations"],
+      ["LEARN-070","Payment Gateways"],
+      ["LEARN-071","Email, SMS & Social Media APIs"],
+      ["LEARN-072","Rate Limits, Retry, Timeout & Circuit Breaker (external calls)"],
+      ["LEARN-073","Vendor Dependency & API Version Compatibility"],
+    ]},
+    { title: "10. Authentication & Security", items: [
+      ["LEARN-074","Authentication vs Authorization"],
+      ["LEARN-075","Password Hashing & Sessions"],
+      ["LEARN-076","JWT & Refresh Tokens"],
+      ["LEARN-077","OAuth 2.0 & OpenID Connect"],
+      ["LEARN-078","SSO, MFA & Passkeys"],
+      ["LEARN-079","RBAC, ABAC & Permissions"],
+      ["LEARN-080","OWASP Top 10 (Injection, XSS, CSRF, SSRF)"],
+      ["LEARN-081","Secrets Management"],
+      ["LEARN-082","CORS, CSP & Rate Limiting"],
+    ]},
+    { title: "11. Cryptography & Privacy", items: [
+      ["LEARN-083","Hashing (SHA-256)"],
+      ["LEARN-084","Symmetric vs Asymmetric Encryption"],
+      ["LEARN-085","Digital Signatures & Certificates (PKI)"],
+      ["LEARN-086","PII & Data Classification"],
+      ["LEARN-087","Encryption at Rest & in Transit"],
+      ["LEARN-088","Data Retention, Deletion & Audit Logs"],
+    ]},
+    { title: "12. Testing & Quality", items: [
+      ["LEARN-089","Unit Testing"],
+      ["LEARN-090","Integration & End-to-End Testing"],
+      ["LEARN-091","Performance, Load & Stress Testing"],
+      ["LEARN-092","Contract Testing"],
+      ["LEARN-093","Mocking & Test Containers"],
+      ["LEARN-094","Code Coverage & Static Analysis"],
+      ["LEARN-095","Code Review & Technical Debt"],
+    ]},
+  ]},
+  { icon: "🟠", title: "PRODUCTION", subsections: [
+    { title: "13. DevOps & CI/CD", items: [
+      ["LEARN-096","CI/CD Pipeline (build-test-package-deploy)"],
+      ["LEARN-097","Docker & Dockerfiles"],
+      ["LEARN-098","Docker Compose"],
+      ["LEARN-099","Container Registries"],
+      ["LEARN-100","Kubernetes (Pods, Deployments, Services)"],
+      ["LEARN-101","ConfigMaps, Secrets, Ingress & Volumes (Kubernetes)"],
+      ["LEARN-102","Helm & Release Management"],
+      ["LEARN-103","Feature Flags & Beta/Dev Toggles"],
+    ]},
+    { title: "14. Cloud Computing", items: [
+      ["LEARN-104","Cloud Service Models (IaaS/PaaS/SaaS)"],
+      ["LEARN-105","Regions, Availability Zones & VMs"],
+      ["LEARN-106","Containers & Serverless (compute options)"],
+      ["LEARN-107","Object, Block & File Storage"],
+      ["LEARN-108","Managed Databases"],
+      ["LEARN-109","Load Balancing & Auto Scaling"],
+      ["LEARN-110","High Availability & Disaster Recovery"],
+      ["LEARN-111","Cost Optimization & Cloud Architecture"],
+    ]},
+    { title: "15. Infrastructure as Code", items: [
+      ["LEARN-112","Infrastructure as Code (concept)"],
+      ["LEARN-113","Terraform"],
+      ["LEARN-114","Ansible & Configuration Management"],
+      ["LEARN-115","CloudFormation/Bicep & Secrets Provisioning"],
+    ]},
+  ]},
+  { icon: "🟣", title: "SCALE", subsections: [
+    { title: "16. Distributed Systems", items: [
+      ["LEARN-116","Horizontal vs Vertical Scaling"],
+      ["LEARN-117","Replication & Sharding"],
+      ["LEARN-118","CAP Theorem & Consistency Models"],
+      ["LEARN-119","Distributed Transactions & Locks"],
+      ["LEARN-120","Leader Election & Consensus"],
+      ["LEARN-121","Message Queues & Pub/Sub (Kafka, RabbitMQ)"],
+      ["LEARN-122","Dead-Letter Queues & Retry Mechanisms"],
+      ["LEARN-123","Idempotency in Distributed Systems"],
+    ]},
+    { title: "17. Scalability & Performance", items: [
+      ["LEARN-124","Performance Profiling & Bottleneck Analysis"],
+      ["LEARN-125","Caching & CDN"],
+      ["LEARN-126","Database Replication & Sharding for Scale"],
+      ["LEARN-127","Load Balancing & Auto Scaling"],
+      ["LEARN-128","Real-Time Communication at Scale"],
+      ["LEARN-129","Event-Driven Architecture"],
+      ["LEARN-130","Delivery Guarantees (at-most/at-least/exactly-once)"],
+    ]},
+    { title: "18. Search & Data Engineering", items: [
+      ["LEARN-131","Full-Text Search & Elasticsearch"],
+      ["LEARN-132","ETL/ELT & Data Pipelines"],
+      ["LEARN-133","Batch vs Stream Processing"],
+      ["LEARN-134","Data Analytics & Business Intelligence"],
+    ]},
+  ]},
+  { icon: "🔴", title: "OPERATE", subsections: [
+    { title: "19. Observability & Production Engineering", items: [
+      ["LEARN-135","Logging (Structured, Levels, Centralized)"],
+      ["LEARN-136","Metrics (CPU, Memory, Request/Error Rate, Latency)"],
+      ["LEARN-137","Distributed Tracing & Correlation IDs"],
+      ["LEARN-138","Monitoring, Alerting & Health Checks"],
+      ["LEARN-139","Incident Management & Rollback"],
+      ["LEARN-140","Backup, Restore & Disaster Recovery (production)"],
+      ["LEARN-141","SLI, SLO & SLA"],
+    ]},
+    { title: "20. Reliability Engineering", items: [
+      ["LEARN-142","Fault Tolerance, Redundancy & Graceful Degradation"],
+      ["LEARN-143","Retry, Timeout, Exponential Backoff & Circuit Breaker (system-wide)"],
+      ["LEARN-144","Bulkhead Pattern"],
+      ["LEARN-145","Failover"],
+      ["LEARN-146","Disaster Recovery & Recovery (whole-system)"],
+    ]},
+    { title: "21. Software Engineering Practices", items: [
+      ["LEARN-147","Agile, Scrum & Kanban"],
+      ["LEARN-148","Estimation & Backlog Management"],
+      ["LEARN-149","Documentation & Architecture Decision Records"],
+      ["LEARN-150","Runbooks & Knowledge Management"],
+      ["LEARN-151","Project Management (for founders)"],
+    ]},
+  ]},
+  { icon: "🟢", title: "ARCHITECT", subsections: [
+    { title: "22. Software Architecture", items: [
+      ["LEARN-152","Monolith vs Microservices"],
+      ["LEARN-153","Event-Driven & Serverless Architecture (system-level)"],
+      ["LEARN-154","Layered, Clean & Hexagonal Architecture"],
+      ["LEARN-155","SOLID Principles"],
+      ["LEARN-156","DRY, KISS & YAGNI"],
+      ["LEARN-157","Coupling & Cohesion"],
+      ["LEARN-158","Design Patterns (Repository, Factory, Strategy, Observer, Adapter, Decorator)"],
+    ]},
+    { title: "23. System Design", items: [
+      ["LEARN-159","Functional & Non-Functional Requirements"],
+      ["LEARN-160","API & Database Design (system-level)"],
+      ["LEARN-161","Trade-off Analysis & Capacity Planning"],
+      ["LEARN-162","Failure Scenario Planning"],
+      ["LEARN-163","Putting It Together: A Full System Design"],
+    ]},
+  ]},
+  { icon: "🟡", title: "INNOVATE", subsections: [
+    { title: "24. AI Engineering", items: [
+      ["LEARN-164","AI/ML Fundamentals & Neural Networks"],
+      ["LEARN-165","NLP & Computer Vision (overview)"],
+      ["LEARN-166","LLMs, Tokens & Embeddings"],
+      ["LEARN-167","Vector Databases & RAG"],
+      ["LEARN-168","Prompt Engineering & Tool/Function Calling"],
+      ["LEARN-169","AI Agents"],
+      ["LEARN-170","Model Evaluation & Fine-Tuning"],
+      ["LEARN-171","AI Cost, Latency & Caching"],
+      ["LEARN-172","Guardrails, Hallucination, Prompt Injection & AI Security"],
+    ]},
+    { title: "25. Mobile & Emerging Technologies", items: [
+      ["LEARN-173","Android & iOS (Native)"],
+      ["LEARN-174","Flutter & React Native (Cross-Platform)"],
+      ["LEARN-175","Progressive Web Apps (PWAs)"],
+      ["LEARN-176","Edge Computing & WebAssembly"],
+      ["LEARN-177","Blockchain Basics"],
+      ["LEARN-178","IoT, AR/VR & Robotics (overview)"],
+    ]},
+  ]},
+];
+
+const STATUS = {
+  "not-started": { label: "Not Started" },
+  "in-progress": { label: "In Progress" },
+  "done": { label: "Done" },
+};
+const STORAGE_KEY = "learn-tracker-status-v1";
+
+function loadState(){
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveState(state){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let state = loadState();
+
+function slug(str){
+  return str.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+
+function statusBadgeHTML(id, current){
+  const opts = Object.entries(STATUS).map(([key,v]) =>
+    `<option value="${key}" ${key===current?'selected':''}>${v.label}</option>`
+  ).join('');
+  return `
+    <span class="status-badge ${current}">
+      <span class="dot"></span>
+      <select class="status-select" data-id="${id}" aria-label="Status for ${id}"
+        style="background:transparent;border:none;color:inherit;font-weight:600;font-size:12px;flex:1;cursor:pointer;">
+        ${opts}
+      </select>
+    </span>`;
+}
+
+function buildContent(){
+  const root = document.getElementById('content');
+  const toc = document.getElementById('toc');
+  root.innerHTML = '';
+  toc.innerHTML = '';
+
+  DATA.forEach((cat, ci) => {
+    const catId = `cat-${ci}`;
+    const section = document.createElement('section');
+    section.className = 'category';
+    section.id = catId;
+
+    const h2 = document.createElement('h2');
+    h2.innerHTML = `<span>${cat.icon}</span><span>${cat.title}</span>`;
+    section.appendChild(h2);
+
+    const tocLink = document.createElement('a');
+    tocLink.href = `#${catId}`;
+    tocLink.textContent = `${cat.icon} ${cat.title}`;
+    toc.appendChild(tocLink);
+
+    cat.subsections.forEach((sub, si) => {
+      const subId = `${catId}-sub-${si}`;
+      const box = document.createElement('div');
+      box.className = 'subsection';
+      box.id = subId;
+
+      const header = document.createElement('div');
+      header.className = 'sub-header';
+      header.innerHTML = `
+        <h3>${sub.title}</h3>
+        <div class="sub-meta">
+          <div class="mini-bar" data-mini="${subId}"></div>
+          <span data-count="${subId}"></span>
+          <span class="chevron">▾</span>
+        </div>`;
+      header.addEventListener('click', () => {
+        box.classList.toggle('collapsed');
+      });
+      box.appendChild(header);
+
+      const table = document.createElement('table');
+      table.innerHTML = `
+        <thead>
+          <tr><th style="width:110px;">Ticket</th><th>Summary</th><th class="status">Resolution</th></tr>
+        </thead>
+        <tbody>
+          ${sub.items.map(([id, summary]) => {
+            const current = state[id] || 'not-started';
+            return `<tr data-row="${id}">
+              <td class="ticket">${id}</td>
+              <td class="summary">${summary}</td>
+              <td class="status">${statusBadgeHTML(id, current)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>`;
+      box.appendChild(table);
+
+      section.appendChild(box);
+    });
+
+    root.appendChild(section);
+  });
+
+  root.querySelectorAll('select.status-select').forEach(sel => {
+    sel.addEventListener('change', (e) => {
+      const id = e.target.dataset.id;
+      const value = e.target.value;
+      state[id] = value;
+      saveState(state);
+      const badge = e.target.closest('.status-badge');
+      badge.className = `status-badge ${value}`;
+      updateSummary();
+    });
+  });
+
+  updateSummary();
+}
+
+function allIds(){
+  const ids = [];
+  DATA.forEach(cat => cat.subsections.forEach(sub => sub.items.forEach(([id]) => ids.push(id))));
+  return ids;
+}
+
+function updateSummary(){
+  const ids = allIds();
+  let notStarted=0, inProgress=0, done=0;
+  ids.forEach(id => {
+    const s = state[id] || 'not-started';
+    if(s === 'done') done++;
+    else if(s === 'in-progress') inProgress++;
+    else notStarted++;
+  });
+  const total = ids.length;
+  document.getElementById('count-not-started').textContent = notStarted;
+  document.getElementById('count-in-progress').textContent = inProgress;
+  document.getElementById('count-done').textContent = done;
+  const pct = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('count-pct').textContent = pct + '%';
+
+  const bar = document.getElementById('overall-bar');
+  bar.innerHTML = `
+    <div class="bar-seg done" style="width:${(done/total)*100}%"></div>
+    <div class="bar-seg progress" style="width:${(inProgress/total)*100}%"></div>
+  `;
+
+  DATA.forEach((cat, ci) => {
+    cat.subsections.forEach((sub, si) => {
+      const subId = `cat-${ci}-sub-${si}`;
+      let sDone=0, sProg=0, sTotal=sub.items.length;
+      sub.items.forEach(([id]) => {
+        const s = state[id] || 'not-started';
+        if(s==='done') sDone++;
+        else if(s==='in-progress') sProg++;
+      });
+      const mini = document.querySelector(`[data-mini="${subId}"]`);
+      if(mini){
+        mini.innerHTML = `
+          <div class="bar-seg done" style="width:${(sDone/sTotal)*100}%"></div>
+          <div class="bar-seg progress" style="width:${(sProg/sTotal)*100}%"></div>`;
+      }
+      const count = document.querySelector(`[data-count="${subId}"]`);
+      if(count) count.textContent = `${sDone}/${sTotal}`;
+    });
+  });
+}
+
+buildContent();
+</script>
+</body>
+</html>
